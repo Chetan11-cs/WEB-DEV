@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Employer Portal | Manage Jobs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 font-sans">
+
+    <nav class="bg-white shadow-sm p-4 mb-10 border-b">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <h1 class="font-black text-2xl text-blue-700 italic">Admin Dashboard</h1>
+            <a href="index.html" class="text-slate-500 hover:text-blue-600 font-bold flex items-center gap-2">
+                <span>←</span> Back to Job Board
+            </a>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-6 pb-20">
+        
+        <section class="bg-white p-10 rounded-3xl shadow-sm border border-slate-100 mb-12">
+            <h2 class="text-3xl font-bold text-slate-800 mb-2">Post a New Opening</h2>
+            <p class="text-slate-500 mb-8">Fill in the details to list a new job on the main board.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label class="text-sm font-bold text-slate-700 ml-1">Job Title</label>
+                    <input id="title" type="text" placeholder="e.g. Senior Java Developer" 
+                           class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-bold text-slate-700 ml-1">Company Name</label>
+                    <input id="company" type="text" placeholder="e.g. CodSoft" 
+                           class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition">
+                </div>
+                <div class="space-y-2 md:col-span-2">
+                    <label class="text-sm font-bold text-slate-700 ml-1">Location</label>
+                    <input id="location" type="text" placeholder="e.g. Nashik, Maharashtra or Remote" 
+                           class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition">
+                </div>
+                <button onclick="addJob()" class="md:col-span-2 bg-blue-600 text-white py-5 rounded-2xl font-bold text-lg hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all active:scale-95">
+                    Post Job Now
+                </button>
+            </div>
+        </section>
+
+        <section>
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-800">Live Postings</h2>
+                    <p class="text-slate-500">Currently active jobs on the platform.</p>
+                </div>
+                <span id="jobCount" class="bg-blue-100 text-blue-700 px-4 py-1 rounded-full font-bold text-sm">0 Jobs</span>
+            </div>
+            
+            <div id="manageContainer" class="grid gap-4">
+                </div>
+        </section>
+    </main>
+
+    <script>
+        const API = "http://localhost:5000/api/jobs";
+
+        // 1. Fetch and Display Jobs
+        async function loadManageList() {
+            try {
+                const res = await fetch(API);
+                const jobs = await res.json();
+                const container = document.getElementById('manageContainer');
+                document.getElementById('jobCount').innerText = `${jobs.length} Jobs`;
+                
+                if (jobs.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+                            <p class="text-slate-400 font-medium">No jobs posted yet. Start by adding one above!</p>
+                        </div>`;
+                    return;
+                }
+
+                container.innerHTML = jobs.map(job => `
+                    <div class="bg-white p-6 rounded-2xl shadow-sm flex justify-between items-center border border-slate-100 hover:border-blue-200 transition group">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center font-bold text-slate-500 group-hover:bg-blue-600 group-hover:text-white transition">
+                                ${job.company.charAt(0)}
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-lg">${job.title}</h3>
+                                <p class="text-slate-500 text-sm font-medium">${job.company} • ${job.location}</p>
+                            </div>
+                        </div>
+                        <button onclick="deleteJob('${job._id}')" 
+                                class="bg-red-50 text-red-600 px-6 py-2 rounded-xl font-bold hover:bg-red-600 hover:text-white transition-all">
+                            Remove
+                        </button>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error("Failed to load jobs", err);
+            }
+        }
+
+        // 2. Add Job Logic
+        async function addJob() {
+            const title = document.getElementById('title').value;
+            const company = document.getElementById('company').value;
+            const location = document.getElementById('location').value;
+
+            if (!title || !company || !location) {
+                alert("Please fill all fields!");
+                return;
+            }
+
+            const data = { title, company, location };
+
+            const res = await fetch(API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                // Clear inputs
+                document.getElementById('title').value = '';
+                document.getElementById('company').value = '';
+                document.getElementById('location').value = '';
+                
+                // Refresh list
+                loadManageList();
+                alert("🚀 Success! Job has been posted.");
+            } else {
+                alert("Error: Could not save the job.");
+            }
+        }
+
+        // 3. Delete Job Logic
+        async function deleteJob(id) {
+            if (!confirm("Are you sure you want to remove this job listing?")) return;
+
+            const res = await fetch(`${API}/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                loadManageList();
+            }
+        }
+
+        // Initial Load
+        loadManageList();
+    </script>
+</body>
+</html>

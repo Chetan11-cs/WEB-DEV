@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CareerHub | CodSoft Task 4</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-3xl font-black text-blue-700 tracking-tighter italic">CareerHub.</h1>
+            <div id="authHeader" class="flex items-center gap-6"></div>
+        </div>
+    </nav>
+
+    <header class="bg-gradient-to-br from-blue-700 to-indigo-900 text-white py-20 px-6 text-center">
+        <h2 class="text-5xl font-extrabold mb-4">Your Next Chapter Starts Here</h2>
+        <p class="text-blue-100 mb-10 text-lg">Explore 20+ verified opportunities in Tech & Design</p>
+        <div class="max-w-2xl mx-auto relative">
+            <input id="searchInput" type="text" oninput="liveSearch()" placeholder="Search by Job Title (e.g. Java, Python)..." 
+                   class="w-full p-5 rounded-2xl text-black outline-none shadow-2xl pl-14 text-lg">
+            <span class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto py-16 px-6">
+        <h3 class="text-2xl font-bold text-slate-800 mb-8">Featured Opportunities</h3>
+        <div id="jobGrid" class="grid gap-8 md:grid-cols-2 lg:grid-cols-3"></div>
+    </main>
+
+    <div id="authModal" class="hidden fixed inset-0 bg-slate-900/90 flex justify-center items-center z-50 p-4 animate-in fade-in duration-300">
+        <div class="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row h-[600px]">
+            <div class="md:w-1/2 relative bg-blue-600 overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800" 
+                     class="absolute inset-0 w-full h-full object-cover opacity-60" alt="Team Work">
+                <div class="relative z-10 p-12 flex flex-col h-full justify-end text-white">
+                    <h3 class="text-3xl font-bold">Join the Community.</h3>
+                    <p class="mt-2 text-blue-100">Access exclusive job roles and apply instantly with a single click.</p>
+                </div>
+            </div>
+            <div class="md:w-1/2 p-12 flex flex-col justify-center overflow-y-auto">
+                <div id="loginForm">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Welcome Back</h2>
+                    <p class="text-slate-500 mb-8">Please enter your credentials to login.</p>
+                    <input id="lEmail" type="email" placeholder="Email Address" class="w-full p-4 border rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <input id="lPass" type="password" placeholder="Password" class="w-full p-4 border rounded-xl mb-6 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg transition">Login Now</button>
+                    <p class="mt-6 text-center text-slate-600">New here? <a href="#" onclick="toggleAuth(false)" class="text-blue-600 font-bold">Create Account</a></p>
+                </div>
+
+                <div id="signupForm" class="hidden">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Create Account</h2>
+                    <p class="text-slate-500 mb-8">Start your professional journey today.</p>
+                    <input id="sName" type="text" placeholder="Full Name" class="w-full p-4 border rounded-xl mb-4 outline-none">
+                    <input id="sEmail" type="email" placeholder="Email Address" class="w-full p-4 border rounded-xl mb-4 outline-none">
+                    <input id="sPass" type="password" placeholder="Password" class="w-full p-4 border rounded-xl mb-6 outline-none">
+                    <button onclick="handleSignup()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold hover:bg-emerald-700 shadow-lg transition">Sign Up</button>
+                    <p class="mt-6 text-center text-slate-600">Already a member? <a href="#" onclick="toggleAuth(true)" class="text-blue-600 font-bold">Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="applyModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+        <div class="bg-white w-full max-w-2xl rounded-3xl p-10 overflow-y-auto max-h-[90vh]">
+            <h2 id="applyTitle" class="text-3xl font-bold text-slate-800 mb-2">Apply</h2>
+            <p class="text-slate-500 mb-8">Complete the form below to submit your profile.</p>
+            
+            <form onsubmit="submitApp(event)" class="space-y-5">
+                <input type="hidden" id="appJobId">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="appName" placeholder="Full Name" required class="p-4 border rounded-xl">
+                    <input type="email" id="appEmail" placeholder="Email" required class="p-4 border rounded-xl">
+                </div>
+                <input type="text" id="appPhone" placeholder="Mobile Number" required class="w-full p-4 border rounded-xl">
+                <textarea id="appSkills" placeholder="Experience & Top Skills (e.g. Java, SQL, Python)" rows="3" class="w-full p-4 border rounded-xl"></textarea>
+                
+                <div class="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center hover:bg-slate-50 transition cursor-pointer relative">
+                    <input type="file" id="resumeFile" required class="absolute inset-0 opacity-0 cursor-pointer">
+                    <div class="text-slate-400">
+                        <p class="font-bold text-slate-600">Click to upload Resume (PDF/DOC)</p>
+                        <p class="text-sm mt-1" id="fileNameLabel">No file selected</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg">Submit Application</button>
+                    <button type="button" onclick="closeApply()" class="px-8 py-4 bg-slate-100 text-slate-600 rounded-xl font-bold">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API = "http://localhost:5000/api";
+        let currentUser = JSON.parse(localStorage.getItem('user'));
+
+        window.onload = () => {
+            updateUI();
+            fetchJobs();
+            if(!currentUser) document.getElementById('authModal').classList.remove('hidden');
+        };
+
+        // UI UPDATES
+        function updateUI() {
+            const header = document.getElementById('authHeader');
+            if(currentUser) {
+                header.innerHTML = `
+                    <div class="flex flex-col text-right">
+                        <span class="text-xs text-slate-400 font-bold uppercase">Logged in as</span>
+                        <span class="font-bold text-slate-800">${currentUser.name}</span>
+                    </div>
+                    <button onclick="logout()" class="bg-red-50 text-red-600 px-6 py-2 rounded-xl font-bold hover:bg-red-600 hover:text-white transition">Logout</button>
+                `;
+            } else {
+                header.innerHTML = `<button onclick="showAuth()" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow-md">Get Started</button>`;
+            }
+        }
+
+        // AUTH
+        function toggleAuth(isLogin) {
+            document.getElementById('loginForm').classList.toggle('hidden', !isLogin);
+            document.getElementById('signupForm').classList.toggle('hidden', isLogin);
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('lEmail').value;
+            const password = document.getElementById('lPass').value;
+            const res = await fetch(`${API}/login`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email, password })
+            });
+            if(res.ok) {
+                currentUser = await res.json();
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                location.reload();
+            } else alert("Error: Account not found or wrong password");
+        }
+
+        async function handleSignup() {
+            const data = { 
+                name: document.getElementById('sName').value, 
+                email: document.getElementById('sEmail').value, 
+                password: document.getElementById('sPass').value 
+            };
+            const res = await fetch(`${API}/signup`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            if(res.ok) {
+                currentUser = await res.json();
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                location.reload();
+            }
+        }
+
+        function logout() { localStorage.clear(); location.reload(); }
+        function showAuth() { document.getElementById('authModal').classList.remove('hidden'); }
+
+        // JOBS
+        async function fetchJobs(q = '') {
+            const res = await fetch(`${API}/jobs?keyword=${q}`);
+            const jobs = await res.json();
+            document.getElementById('jobGrid').innerHTML = jobs.map(j => `
+                <div class="bg-white p-8 rounded-3xl border border-slate-100 hover:border-blue-300 transition-all shadow-sm hover:shadow-xl group">
+                    <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 font-bold mb-6 group-hover:bg-blue-600 group-hover:text-white transition">
+                        ${j.company.charAt(0)}
+                    </div>
+                    <h3 class="font-black text-xl text-slate-800">${j.title}</h3>
+                    <p class="text-blue-600 font-bold mt-1">${j.company}</p>
+                    <div class="flex items-center gap-2 mt-4 text-slate-400 text-sm">
+                        <span>📍 ${j.location}</span>
+                        <span>•</span>
+                        <span>Full Time</span>
+                    </div>
+                    <button onclick="openApply('${j._id}', '${j.title}')" class="w-full mt-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-blue-600 transition shadow-lg">Apply Now</button>
+                </div>
+            `).join('');
+        }
+
+        function liveSearch() { fetchJobs(document.getElementById('searchInput').value); }
+
+        // APPLY
+        function openApply(id, title) {
+            if(!currentUser) return showAuth();
+            document.getElementById('appJobId').value = id;
+            document.getElementById('applyTitle').innerText = "Apply for " + title;
+            document.getElementById('applyModal').classList.remove('hidden');
+        }
+
+        function closeApply() { document.getElementById('applyModal').classList.add('hidden'); }
+
+        // File name display logic
+        document.getElementById('resumeFile').addEventListener('change', function(e) {
+            const fileName = e.target.files[0] ? e.target.files[0].name : "No file selected";
+            document.getElementById('fileNameLabel').innerText = fileName;
+        });
+
+        async function submitApp(e) {
+            e.preventDefault();
+            const fileName = document.getElementById('resumeFile').files[0].name;
+            const res = await fetch(`${API}/apply`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    jobId: document.getElementById('appJobId').value,
+                    name: document.getElementById('appName').value,
+                    email: document.getElementById('appEmail').value,
+                    resumeFileName: fileName
+                })
+            });
+            if(res.ok) {
+                alert("✅ Success! Your application with " + fileName + " has been sent.");
+                closeApply();
+            }
+        }
+    </script>
+</body>
+</html>
